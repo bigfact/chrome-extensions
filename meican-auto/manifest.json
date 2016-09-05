@@ -1,0 +1,29 @@
+/**
+ * 插件基本信息配置
+ * @author bigfact
+ */
+{
+  "name": "meican-auto",
+  "manifest_version": 2,
+  "version": "1.0.0",
+  "description": "meican-auto",
+  "minimum_chrome_version": "23",
+  "icons": {
+    "128": "./img/logo.png"
+  },
+  // "app": {
+  //   "background": {
+  //     "scripts": ["./main.js"]
+  //   }
+  // },
+  "browser_action": {
+    "default_icon": "./img/logo.png",
+    "default_title": "meican-auto",
+    "default_popup": "./index.html"
+  },
+  "permissions": [
+    "notifications",
+    "cookies",
+    "https://meican.com/"
+  ]
+}
