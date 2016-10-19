@@ -1,0 +1,31 @@
+/**
+ * 屏幕适配设置
+ */
+// 与 /src/services/tools.js 中 rate 的值一致
+$_html_font_size: 10;
+$html_font_size: $_html_font_size + px;
+$html_max_width: 768px;
+
+/**
+ * 单位转换函数
+ */
+@function px2rem($px) {
+	@return $px / $_html_font_size * 1rem;
+}
+
+/**
+ * 主要变量声明
+ */
+$red: #FF4345;
+$deep-red: #DB3738;
+$orange-red: #F24F2D;
+$gray: #747474;
+$light: #DBDBDB;
+$rice: #F6F3F3;
+$black: #383838;
+
+$color-white: #FFFFFF;
+$color-important: #FF4345;
+
+$bg-important: #FF4345;
+$bg-light: #DBDBDB;

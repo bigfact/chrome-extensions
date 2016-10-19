@@ -1,0 +1,24 @@
+/**
+ * 插件基本信息配置
+ * @author bigfact
+ */
+{
+  "name": "sentry-count",
+  "manifest_version": 2,
+  "version": "1.0.0",
+  "description": "sentry-count",
+  "minimum_chrome_version": "23",
+  "icons": {
+    "128": "./img/logo.png"
+  },
+  "browser_action": {
+    "default_icon": "./img/logo.png",
+    "default_title": "sentry-count",
+    "default_popup": "./index.html"
+  },
+  "permissions": [
+    "notifications",
+    "cookies",
+    "http://sentry.fond.io/"
+  ]
+}
