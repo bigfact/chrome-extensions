@@ -117,13 +117,14 @@
    */
   function queryError(device, errorType) {
     ajaxCount++
-    var tmp = 'is:unresolved' + (device ? ' device:"' + device + '"' : '') + (errorType ? ' ' + errorType : '')
+    // var tmp = 'is:unresolved' + (device ? ' device:"' + device + '"' : '') + (errorType ? ' ' + errorType : '')
+    var tmp = (device ? 'device:"' + device + '" ' : '') + (errorType ? errorType : '')
     ajax.get(countBaseUrl, {
       query: tmp,
       limit: MAX,
-      sort: 'date',
-      shortIdLookup: 1,
-      statsPeriod: '24h',
+      // sort: 'date',
+      // shortIdLookup: 1,
+      // statsPeriod: '24h',
     })
       .then(function (xhr, res) {
         var key = (errorTypesRelations[errorType] ? errorTypesRelations[errorType] + '||' : '') + errorType + (device ? '||' + device : '')
