@@ -13,53 +13,10 @@
    * 测试用 DOM 元素
    */
   var doms = {
-    getBasic: getDom('.get-basic'),
-    getTime: getDom('.get-time-list'),
-    getRestaurant: getDom('.get-restaurant-list'),
-    getDish: getDom('.get-dish-list'),
-    addDish: getDom('.add-dish'),
     addDishOnce: getDom('.add-dish-once'),
   }
 
-  /**
-   * 请求参数
-   */
-  var baseData = {
-    beginDate: '',
-    endDate: '',
-    targetTime: '',
-    tabUniqueId: '',
-    corpAddressUniqueId: '',
-    userAddressUniqueId: '',
-    restaurantUniqueId: '',
-    order: '',
-    message: '',
-  }
-
-  doms.getBasic.addEventListener('click', getBasic, false);
-
-  doms.getTime.addEventListener('click', getTime, false);
-
-  doms.getRestaurant.addEventListener('click', getRestaurant, false);
-
-  doms.getDish.addEventListener('click', getDish, false);
-
-  doms.addDish.addEventListener('click', addDish, false);
-
-  doms.addDishOnce.addEventListener('click', addDishOnce, false);
-
-  /**
-   * 一键下单
-   */
-  function addDishOnce() {
-    getBasic(function () {
-      getTime(function () {
-        getRestaurant(function () {
-          getDish(addDish);
-        });
-      });
-    });
-  }
+  doms.addDishOnce.addEventListener('click', getBasic, false);
 
   /**
    * 获取基础信息
@@ -72,22 +29,24 @@
       .then(function (xhr, res) {
         var date = new Date(res.serverTime);
         var date2 = new Date(res.serverTime + 7 * 24 * 60 * 60 * 1000);
-        baseData.beginDate = formatDate(date);
-        baseData.endDate = formatDate(date2);
-        typeof cb == 'function' && cb();
+        var beginDate = formatDate(date);
+        var endDate = formatDate(date2);
+
+        getTime(beginDate, endDate);
+
       });
   }
 
   /**
    * 获取时间
    */
-  function getTime(cb) {
+  function getTime(beginDate, endDate) {
     var data = {
-      beginDate: baseData.beginDate,
-      endDate: baseData.endDate,
+      beginDate: beginDate,
+      endDate: endDate,
       noHttpGetCache: Date.now(),
       withOrderDetail: false,
-    };
+    }
     ajax.get(baseUrl + 'preorder/api/v2.1/calendarItems/list', data)
       .then(function (xhr, res) {
         var list = res.dateList;
@@ -95,76 +54,78 @@
         for (var i = 0; i < list.length; i++) {
           if (list[i].calendarItemList[0].status == 'AVAILABLE') {
             tmp = list[i].calendarItemList[0];
-            break;
+            var date = new Date(tmp.targetTime);
+            var tabUniqueId = tmp.userTab.uniqueId;
+            var targetTime = formatDateTime(date);
+            var corpAddressUniqueId = tmp.userTab.corp.addressList[0].uniqueId;
+            var userAddressUniqueId = tmp.userTab.corp.addressList[0].uniqueId;
+            var message = '点餐时间：' + targetTime + ' 周' + date.getDay() + '\n';
+
+            getRestaurant(corpAddressUniqueId, tabUniqueId, targetTime, userAddressUniqueId, message);
+
           }
         }
-        var date = new Date(tmp.targetTime);
-        baseData.tabUniqueId = tmp.userTab.uniqueId;
-        baseData.targetTime = formatDateTime(date);
-        baseData.corpAddressUniqueId = tmp.userTab.corp.addressList[0].uniqueId;
-        baseData.userAddressUniqueId = tmp.userTab.corp.addressList[0].uniqueId;
-        baseData.message += '点餐时间：' + baseData.targetTime + '周' + date.getDay() + '\n';
-        typeof cb == 'function' && cb();
       });
   }
 
   /**
    * 获取餐厅列表
    */
-  function getRestaurant(cb) {
+  function getRestaurant(corpAddressUniqueId, tabUniqueId, targetTime, userAddressUniqueId, message) {
     var data = {
       noHttpGetCache: Date.now(),
-      tabUniqueId: baseData.tabUniqueId,
-      targetTime: baseData.targetTime,
+      tabUniqueId: tabUniqueId,
+      targetTime: targetTime,
     }
     ajax.get(baseUrl + 'preorder/api/v2.1/restaurants/list', data)
       .then(function (xhr, res) {
         var index = getRandomInt(0, res.restaurantList.length - 1);
-        baseData.restaurantUniqueId = res.restaurantList[index].uniqueId;
-        baseData.message += '餐厅：' + res.restaurantList[index].name + '\n';
-        typeof cb == 'function' && cb();
+        var restaurantUniqueId = res.restaurantList[index].uniqueId;
+        message += '餐厅：' + res.restaurantList[index].name + '\n';
+
+        getDish(corpAddressUniqueId, restaurantUniqueId, tabUniqueId, targetTime, userAddressUniqueId, message);
+
       });
   }
 
   /**
    * 获取菜品列表
    */
-  function getDish(cb) {
+  function getDish(corpAddressUniqueId, restaurantUniqueId, tabUniqueId, targetTime, userAddressUniqueId, message) {
     var data = {
       noHttpGetCache: Date.now(),
-      restaurantUniqueId: baseData.restaurantUniqueId,
-      tabUniqueId: baseData.tabUniqueId,
-      targetTime: baseData.targetTime,
+      restaurantUniqueId: restaurantUniqueId,
+      tabUniqueId: tabUniqueId,
+      targetTime: targetTime,
     }
     ajax.get(baseUrl + 'preorder/api/v2.1/restaurants/show', data)
       .then(function (xhr, res) {
         var list = [];
+        // 在这里做菜品过滤
         for (var i = 0; i < res.dishList.length; i++) {
           if (!res.dishList[i].isSection) list.push(res.dishList[i]);
         }
-        console.log(list);
-        var index = getRandomInt(0, list.length);
-        var dishId = list[index].id;
-        baseData.order = encodeURI('[{"count": 1, "dishId": ' + dishId + '}]');
-        baseData.message += '菜名：' + list[index].name + '\n';
-        typeof cb == 'function' && cb();
+        var index = getRandomInt(0, list.length - 1);
+        var order = encodeURI('[{"count": 1, "dishId": ' + list[index].id + '}]');
+        message += '菜名：' + list[index].name + '\n';
+
+        addDish(corpAddressUniqueId, order, tabUniqueId, targetTime, userAddressUniqueId, message);
+
       });
   }
 
   /**
    * 下单
    */
-  function addDish(cb) {
-    var tmp = 'corpAddressUniqueId=' + baseData.corpAddressUniqueId;
-    tmp += '&' + 'order=' + baseData.order;
-    tmp += '&' + 'tabUniqueId=' + baseData.tabUniqueId;
-    tmp += '&' + 'targetTime=' + baseData.targetTime;
-    tmp += '&' + 'userAddressUniqueId=' + baseData.userAddressUniqueId;
+  function addDish(corpAddressUniqueId, order, tabUniqueId, targetTime, userAddressUniqueId, message) {
+    var tmp = 'corpAddressUniqueId=' + corpAddressUniqueId;
+    tmp += '&' + 'order=' + order;
+    tmp += '&' + 'tabUniqueId=' + tabUniqueId;
+    tmp += '&' + 'targetTime=' + targetTime;
+    tmp += '&' + 'userAddressUniqueId=' + userAddressUniqueId;
     ajax.post(baseUrl + 'preorder/api/v2.1/orders/add?' + tmp)
       .then(function (xhr, res) {
-        createNotice(baseData.message);
-        baseData.message = '';
-        typeof cb == 'function' && cb();
+        createNotice(message);
       });
   }
 
@@ -265,4 +226,4 @@
     return Math.floor(Math.random() * (max - min + 1) + min);
   }
 
-} ();
+} ()
