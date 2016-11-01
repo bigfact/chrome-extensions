@@ -1,26 +1,50 @@
 <!DOCTYPE html>
 <html lang="ch-ZN">
+
 <head>
-  <meta charset="UTF-8">
-  <title>meican-auto</title>
-  <style>
-    body {
-      width: 200px;
-      padding: 0 20px;
-    }
-    button {
-      display: block;
-      width: 100%;
-      padding: 5px 0;
-      margin-bottom: 10px;
-      text-align: center;
-    }
-  </style>
+	<meta charset="UTF-8">
+	<title>meican-auto</title>
+	<style>
+		body {
+			width: 200px;
+			padding: 0 20px;
+		}
+		
+		button {
+			display: block;
+			width: 100%;
+			padding: 5px 0;
+			margin-bottom: 10px;
+			text-align: center;
+		}
+		
+		.message-wrap > p {
+			padding-top: 10px;
+		}
+		
+		.tip {
+			color: #f00;
+		}
+	</style>
 </head>
+
 <body>
-  <button class="add-dish-once">一键下单</button>
-  <script src="./js/qwest.min.js"></script>
-  <script src="./js/ajax.js"></script>
-  <script src="./js/app.js"></script>
+
+	<section>
+		<p>我想吃</p>
+		<textarea name="wants" id="wants" cols="30" rows="2"></textarea>
+		<p>我不想吃</p>
+		<textarea name="notwants" id="not-wants" cols="30" rows="2"></textarea>
+		<p class="tip">* 关键字用逗号隔开，例如：肉，鸡，猪，香菜</p>
+		<p><button class="add-dish-once">一键下单</button></p>
+	</section>
+
+	<section class="message-wrap"></section>
+
+	<script src="./js/qwest.min.js"></script>
+	<script src="./js/ajax.js"></script>
+	<script src="./js/app.js"></script>
+
 </body>
+
 </html>
